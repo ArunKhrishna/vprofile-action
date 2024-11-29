@@ -69,7 +69,7 @@ public class FileUploadController {
 
 				return "You successfully uploaded file=" + name +".png";
 			} catch (Exception e) {
-				return "You failed to UPLOAD " + name +".png" + " => " + e.getMessage();
+				return "You failed to upload " + name +".png" + " => " + e.getMessage();
 			}
 		} else {
 			return "You failed to upload " + name +".png"
