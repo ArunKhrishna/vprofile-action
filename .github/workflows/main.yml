@@ -18,18 +18,15 @@ jobs:
       - name: Checkstyle
         run: mvn checkstyle:checkstyle
 
-      # Setup Java 11 to be default (sonar-scanner requirement as of 5.x)
       - name: Set Java 11
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '11'
 
-      # Setup sonar-scanner
       - name: Setup SonarQube
         uses: warchant/setup-sonar-scanner@v7
 
-      # Run sonar-scanner
       - name: SonarQube Scan
         run: |
           sonar-scanner \
@@ -43,15 +40,20 @@ jobs:
             -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml \
             -Dsonar.java.binaries=target/test-classes/com/visualpathit/account/controllerTest/
 
-      # Check the Quality Gate status and allow the pipeline to continue
-      - name: SonarQube Quality Gate check
-        id: sonarqube-quality-gate-check
-        uses: sonarsource/sonarqube-quality-gate-action@master
-        continue-on-error: true
-        timeout-minutes: 5
+      - name: SonarQube Quality Gate check (manually handled)
+        run: |
+          echo "Checking SonarQube Quality Gate result..."
+          sleep 10
+          curl -s -u ${{ secrets.SONAR_TOKEN }}: \
+            "${{ secrets.SONAR_URL }}/api/qualitygates/project_status?projectKey=${{ secrets.SONAR_PROJECT_KEY }}" > result.json
+          cat result.json
+          gateStatus=$(jq -r '.projectStatus.status' result.json)
+          echo "Quality Gate Status: $gateStatus"
+          if [[ "$gateStatus" != "OK" ]]; then
+            echo "::warning ::SonarQube Quality Gate failed, but continuing..."
+          fi
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_URL }}
 
   BUILD_AND_PUBLISH:
     needs: Testing
