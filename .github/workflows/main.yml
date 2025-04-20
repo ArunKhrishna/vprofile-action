@@ -55,6 +55,6 @@ jobs:
           repo: ${{ env.ECR_REPOSITORY }}
           region: ${{ env.AWS_REGION }}
           tags: latest,${{ github.run_number }}
-          daemon_off: false
+          daemon_off: true   # Use this flag to avoid Docker daemon startup issues
           dockerfile: ./Dockerfile
           context: ./
